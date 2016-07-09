@@ -8,5 +8,5 @@ package main
 	../../ziften/protocolbuffer/Protobuf/
 */
 import (
-	"github.com/ziften/protocolbuffers"
+	_ "github.com/ziften/protocolbuffers"
 )
