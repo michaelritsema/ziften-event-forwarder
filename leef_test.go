@@ -10,7 +10,8 @@ func TestGenerateHeader(t *testing.T) {
 
 func TestGenerateEventAttr(t *testing.T) {
 	msgmap := make(map[string]interface{})
-	msgmap["TimeStamp"] = 131122061909468384
+	var timestamp int64 = 131122061909468384
+	msgmap["TimeStamp"] = &timestamp
 	msgmap["ImageFilepath"] = `ImageFilepath=c:\windows\system32\gpsvc.dll`
 	msgmap["BootAnalysisGUID"] = "{B7FA08ED-B055-427C-8811-9EDB674E2164}"
 	t.Logf(generateEventAttr(msgmap))
