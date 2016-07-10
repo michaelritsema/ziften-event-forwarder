@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"time"
 )
 
@@ -57,9 +58,17 @@ func generateEventAttr(msgmap map[string]interface{}) string {
 	for k, v := range msgmap {
 		buffer.WriteString(k)
 		buffer.WriteString(equals)
-		buffer.WriteString(fmt.Sprintf("%v", v))
+		if k != "XXX_unrecognized" {
+			//t.Logf("%v=%v", k, reflect.Indirect(reflect.ValueOf(v)))
+			buffer.WriteString(fmt.Sprintf("%v", reflect.Indirect(reflect.ValueOf(v))))
+		}
+
 		buffer.WriteString(tab)
 	}
 
 	return buffer.String()
+}
+
+func GenerateLeef(msgmap map[string]interface{}) string {
+	return generateHeader(msgmap["event_type"].(string)) + " " + generateEventAttr(msgmap)
 }
