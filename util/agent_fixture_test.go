@@ -6,7 +6,7 @@ import (
 
 func TestPrintMessages(t *testing.T) {
 	for _, line := range ExampleMessage() {
-		t.Log(line)
+		t.Log(line + "\n\n")
 	}
 
 }

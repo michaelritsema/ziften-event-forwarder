@@ -1,23 +1,54 @@
 package main
 
 import (
-/*
+	/*
+		"encoding/base64"
+		"fmt"
+		"github.com/Shopify/sarama"
+		"github.com/golang/protobuf/proto"
+		"github.com/michaelritsema/ziften-event-forwarder/msg"
+		"sync"
+
+	*/
 	"encoding/base64"
-	"fmt"
-	"github.com/Shopify/sarama"
+	"encoding/xml"
+	"github.com/fatih/structs"
 	"github.com/golang/protobuf/proto"
-	"github.com/michaelritsema/ziften-event-forwarder/msg"
-	"sync"
-*/
+	"reflect"
+	//"github.com/michaelritsema/ziften-event-forwarder/msg"
 )
 
-type Message struct {
-	messageType string
-	payload     string
+type AgentXMLMessage struct {
+	XMLName     xml.Name `xml:"pb"`
+	Payload     string   `xml:",chardata"`
+	MessageType string   `xml:"type,attr"`
+	Hmac        string   `xml:"HMAC,attr"`
 }
 
-func parseXML(xml string) string {
-	return ""
+// wrapper for protobuf
+type AgentMessage struct {
+	MessageType string
+	Protobuf    interface{}
+}
+
+func (m *AgentXMLMessage) toMap() map[string]interface{} {
+
+	bytes, _ := base64.StdEncoding.DecodeString(m.Payload)
+	//var messageMap map[string]interface{} = nil
+
+	msgtype := proto.MessageType(m.MessageType).Elem()
+	x := reflect.New(msgtype).Interface()
+	proto.Unmarshal(bytes, x.(proto.Message))
+	messageMap := structs.Map(x)
+	return messageMap
+	//pmsg := &protomsg.IpfixEncapsulation{}
+	//proto.Unmarshal(bytes, pmsg)
+}
+
+func ParseXML(xmlmsg string) AgentXMLMessage {
+	v := AgentXMLMessage{}
+	xml.Unmarshal([]byte(xmlmsg), &v)
+	return v
 }
 
 func main() {
