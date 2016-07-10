@@ -15,6 +15,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/golang/protobuf/proto"
 	"reflect"
+	"time"
 	//"github.com/michaelritsema/ziften-event-forwarder/msg"
 )
 
@@ -31,6 +32,26 @@ type AgentMessage struct {
 	Protobuf    interface{}
 }
 
+func WindowsTimeToUnixTime(windows_time int64) int64 {
+	// number of milliseconds between Jan 1st 1601 and Jan 1st 1970
+	var time_shift int64
+	time_shift = 11644473600000
+
+	if windows_time == 0 {
+		return windows_time
+	}
+
+	windows_time /= 10000      // ns to ms
+	windows_time -= time_shift // since 1601 to since 1970
+	windows_time /= 1000
+	return windows_time
+}
+
+// data adjusting that should happen across all messages
+func preprocessMap(msgmap map[string]interface{}) {
+	msgmap["TimeStamp"] = time.Unix(WindowsTimeToUnixTime(*msgmap["TimeStamp"].(*int64)), 0).String()
+}
+
 func (m *AgentXMLMessage) toMap() map[string]interface{} {
 
 	bytes, _ := base64.StdEncoding.DecodeString(m.Payload)
@@ -39,8 +60,10 @@ func (m *AgentXMLMessage) toMap() map[string]interface{} {
 	msgtype := proto.MessageType(m.MessageType).Elem()
 	x := reflect.New(msgtype).Interface()
 	proto.Unmarshal(bytes, x.(proto.Message))
-	messageMap := structs.Map(x)
-	return messageMap
+	msgmap := structs.Map(x)
+	preprocessMap(msgmap)
+	return msgmap
+
 	//pmsg := &protomsg.IpfixEncapsulation{}
 	//proto.Unmarshal(bytes, pmsg)
 }
